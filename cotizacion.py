@@ -116,32 +116,20 @@ if driver:
         observaciones.send_keys("MENSAJE DE PRUEBA KRGG")
         print("Mensaje agregado en el campo de observaciones")
 
-        # 8. Dar clic en el campo 'Estado de documentación'
-        # 8. Seleccionar Estado de documentación
-        try:
-            # Localizar el contenedor completo del q-select
-            estado_documentacion_select = WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located((By.XPATH, "//label[span[text()='Estado de documentación']]/following-sibling::div"))
-            )
-            driver.execute_script("arguments[0].scrollIntoView(true);", estado_documentacion_select)
-            time.sleep(1)
+        # 8. Ahora vamos a dar clic en el campo Estado de documentación
+        estado_documentacion_dropdown = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Estado de documentación')]/following-sibling::label"))
+        )
+        estado_documentacion_dropdown.click()
+        print("Desplegable 'Estado de documentación' abierto.")
 
-            # Hacer clic en el ícono del dropdown dentro del select
-            dropdown_icon = estado_documentacion_select.find_element(By.XPATH, ".//i[contains(@class,'q-select__dropdown-icon')]")
-            driver.execute_script("arguments[0].click();", dropdown_icon)
-            print("Dropdown 'Estado de documentación' abierto.")
-
-            # Esperar que aparezca la opción 'PENDIENTE'
-            opcion_pendiente = WebDriverWait(driver, 20).until(
-                EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'q-menu')]//div[@role='option']//span[normalize-space(text())='PENDIENTE']"))
-            )
-            driver.execute_script("arguments[0].click();", opcion_pendiente)
-            print("Opción 'PENDIENTE' seleccionada.")
-
-        except Exception as e:
-            print(f"❌ Error al seleccionar Estado de documentación: {e}")
-
-
+            # Ahora, esperamos a que la opción 'EN REVISIÓN' sea visible y Clickeable.
+        print("Esperando a que la opción 'EN REVISIÓN' esté disponible...")
+        en_proceso = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[@role='option']//span[text()='EN REVISIÓN']"))
+        )
+        en_proceso.click()
+        print("Opción 'EN REVISIÓN' seleccionada.")
 
 
         print("Proceso de cotización finalizado.")
