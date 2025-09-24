@@ -35,13 +35,13 @@ if driver:
 
 
         # --- AQUÍ SE EMPIEZA A LLENAR EL FORMULARIO ---
-        time.sleep(3) # Pausa de 3 segundos para que el formulario se cargue
-        print("Pausa de 3 segundos para la carga del formulario.")
-
-        #Paso 3: Dará clic en el label "Entidad Solicitante"
+        # Espera implícita por el primer elemento del formulario en lugar de un sleep estático
+        print("Esperando a que el formulario se cargue...")
         clic_entidad_solicitante = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Entidad solicitante')]/following-sibling::label"))
         )
+        print("Formulario cargado.")
+
         # Re-aplicar el zoom al 67%
         driver.execute_script("document.body.style.zoom='67%'")
         print("Zoom re-aplicado a 67%.")
@@ -82,24 +82,18 @@ if driver:
             EC.visibility_of_element_located((By.XPATH, "//div[contains(@class, 'q-date__navigation')]//div[@class='relative-position overflow-hidden flex flex-center']//span[@class='block']"))
         )
         
-        # Usamos un bucle para hacer clic hasta que el año sea el correcto
         while current_year_element.text != str(fecha_fin.year):
             year_chevron_btn = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Año siguiente']"))
             )
             year_chevron_btn.click()
-            time.sleep(0.5) # Pausa corta para que el calendario se actualice
-            
-            # Re-encontrar el elemento del año para comprobar el texto en la siguiente iteración
+            time.sleep(0.5)
             current_year_element = WebDriverWait(driver, 20).until(
                 EC.visibility_of_element_located((By.XPATH, "//div[contains(@class, 'q-date__navigation')]//div[@class='relative-position overflow-hidden flex flex-center']//span[@class='block']"))
             )
-            
             print(f"El año actual es: {current_year_element.text}")
-            
         print(f"El año {fecha_fin.year} ha sido seleccionado.")
 
-        # Ahora que el año es correcto, hacemos clic en el día
         fecha_fin_day = str(fecha_fin.day)
         dia_final = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, f"//div[contains(@class, 'q-date__calendar-days')]//span[text()='{fecha_fin_day}']"))
@@ -111,8 +105,6 @@ if driver:
         observaciones = WebDriverWait (driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, "//span[text()='Observaciones']/following-sibling::label//textarea"))
         )
-
-        #Aquí veremos el mensaje en ese campo
         observaciones.send_keys("MENSAJE DE PRUEBA KRGG")
         print("Mensaje agregado en el campo de observaciones")
 
@@ -123,7 +115,6 @@ if driver:
         estado_documentacion_dropdown.click()
         print("Desplegable 'Estado de documentación' abierto.")
 
-            # Ahora, esperamos a que la opción 'EN REVISIÓN' sea visible y Clickeable.
         print("Esperando a que la opción 'EN REVISIÓN' esté disponible...")
         en_proceso = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, "//div[@role='option']//span[text()='EN REVISIÓN']"))
@@ -131,6 +122,63 @@ if driver:
         en_proceso.click()
         print("Opción 'EN REVISIÓN' seleccionada.")
 
+        # 9. Ahora vamos con el campo Origen pensión *
+        origen_pension = WebDriverWait (driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Origen pensión *')]/following-sibling::label"))
+        )
+        origen_pension.click()
+        print("Se realiza el clic en el campo Origen pensión")
+
+        origen_invalidez = WebDriverWait (driver,10).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[@role='option']//span[text()='INVALIDEZ']"))
+        )
+        origen_invalidez.click()
+        print("Se seleccionó el valor INVALIDEZ")
+        
+        # --- INICIO DEL BLOQUE CORREGIDO Y ROBUSTO ---
+
+        # 10. Ingresar valor en el campo "Vr. capital *"
+        try:
+            print("Esperando a que el campo 'Vr. capital *' sea visible...")
+            # XPath corregido para que coincida EXACTAMENTE con el HTML (mayúsculas, punto, espacio, asterisco)
+            vr_capital_locator = (By.XPATH, "//span[text()='Vr. capital *']/following-sibling::label//input")
+            
+            # Esperamos a que el elemento sea VISIBLE
+            vr_capital_input = WebDriverWait(driver, 15).until(
+                EC.visibility_of_element_located(vr_capital_locator)
+            )
+            
+            vr_capital_input.clear()
+            vr_capital_input.send_keys("130000000")
+            print("Valor agregado en 'Vr. capital *'")
+
+        except TimeoutException:
+            print("ERROR: El campo 'Vr. capital *' no se hizo visible. Guardando captura de pantalla.")
+            driver.save_screenshot("error_vr_capital.png")
+            raise
+
+        # 11. Ingresar valor en el campo "Vr. pensión *" (asumiendo formato similar)
+        print("Esperando a que el campo 'Vr. pensión *' sea visible...")
+        # NOTA: Confirma si este texto es "Vr. pensión *" o "Vr. pension *"
+        vr_pension_locator = (By.XPATH, "//span[text()='Vr. pensión *']/following-sibling::label//input")
+        vr_pension_input = WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located(vr_pension_locator)
+        )
+        vr_pension_input.clear()
+        vr_pension_input.send_keys("1200000")
+        print("Valor agregado en 'Vr. pensión *'")
+
+        # 12. Ingresar valor en el campo "# mesadas *" (asumiendo formato similar)
+        print("Esperando a que el campo '# mesadas *' sea visible...")
+        mesadas_locator = (By.XPATH, "//span[text()='# mesadas *']/following-sibling::label//input")
+        mesadas_input = WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located(mesadas_locator)
+        )
+        mesadas_input.clear()
+        mesadas_input.send_keys("13")
+        print("Valor agregado en '# mesadas *'")
+        
+        # --- FIN DEL BLOQUE CORREGIDO ---
 
         print("Proceso de cotización finalizado.")
         time.sleep(5) # Pausa para ver los resultados
