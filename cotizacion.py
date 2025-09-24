@@ -138,26 +138,24 @@ if driver:
         # --- INICIO DEL BLOQUE CORREGIDO Y ROBUSTO ---
 
         # 10. Ingresar valor en el campo "Vr. capital *"
-        try:
-            print("Esperando a que el campo 'Vr. capital *' sea visible...")
-            # XPath corregido para que coincida EXACTAMENTE con el HTML (mayúsculas, punto, espacio, asterisco)
-            vr_capital_locator = (By.XPATH, "//span[text()='Vr. capital *']/following-sibling::label//input")
+        print("Esperando a que el campo 'Vr. capital *' sea visible...")
             
-            # Esperamos a que el elemento sea VISIBLE
-            vr_capital_input = WebDriverWait(driver, 15).until(
-                EC.visibility_of_element_located(vr_capital_locator)
-            )
+        vr_capital_locator = (By.XPATH, "//span[text()='Vr. capital *']/following-sibling::label//input")
             
-            vr_capital_input.clear()
-            vr_capital_input.send_keys("130000000")
-            print("Valor agregado en 'Vr. capital *'")
+        # Esperamos a que el elemento sea VISIBLE
+        vr_capital_input = WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located(vr_capital_locator)
+        )
+            
+        vr_capital_input.clear()
+        vr_capital_input.send_keys("130000000")
+        print("Valor agregado en 'Vr. capital *'")
 
-        except TimeoutException:
-            print("ERROR: El campo 'Vr. capital *' no se hizo visible. Guardando captura de pantalla.")
-            driver.save_screenshot("error_vr_capital.png")
-            raise
+    
+        print("ERROR: El campo 'Vr. capital *' no se hizo visible. Guardando captura de pantalla.")
+        driver.save_screenshot("error_vr_capital.png")
 
-        # 11. Ingresar valor en el campo "Vr. pensión *" (asumiendo formato similar)
+        # 11. Ingresar valor en el campo "Vr. pensión *"
         print("Esperando a que el campo 'Vr. pensión *' sea visible...")
         # NOTA: Confirma si este texto es "Vr. pensión *" o "Vr. pension *"
         vr_pension_locator = (By.XPATH, "//span[text()='Vr. pensión *']/following-sibling::label//input")
@@ -165,10 +163,10 @@ if driver:
             EC.visibility_of_element_located(vr_pension_locator)
         )
         vr_pension_input.clear()
-        vr_pension_input.send_keys("1200000")
+        vr_pension_input.send_keys("1623500")
         print("Valor agregado en 'Vr. pensión *'")
 
-        # 12. Ingresar valor en el campo "# mesadas *" (asumiendo formato similar)
+        # 12. Ingresar valor en el campo "# mesadas "
         print("Esperando a que el campo '# mesadas *' sea visible...")
         mesadas_locator = (By.XPATH, "//span[text()='# mesadas *']/following-sibling::label//input")
         mesadas_input = WebDriverWait(driver, 10).until(
@@ -178,7 +176,68 @@ if driver:
         mesadas_input.send_keys("13")
         print("Valor agregado en '# mesadas *'")
         
-        # --- FIN DEL BLOQUE CORREGIDO ---
+         # 13. Hacer clic en el botón "Continuar" para finalizar
+        print("Buscando el botón 'Continuar'...")
+        continuar_btn = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[.//span[text()='Continuar']]"))
+        )
+        
+        # Hacemos scroll por si el botón está fuera de la vista
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", continuar_btn)
+        time.sleep(0.5)
+
+        continuar_btn.click()
+        print("Botón 'Continuar' ha sido presionado.")
+
+
+
+
+#------------------------------------SEGUNDA SECCIÓN DE LA CREACIÓN DE COTIZACIÓN ------------------------------------
+        #-----------DATOS BASICOS-----------        
+
+        # 1. Tipo de identificación
+        tipo_documento_locator = (By.XPATH, "//span[text()='Tipo identificación *']/following-sibling::label")
+        print("Esperando a que cargue la segunda parte del formulario...")
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located(tipo_documento_locator)
+        )
+        print("Segunda parte del formulario cargada.")
+
+        # Paso B: Hacer scroll para que el elemento sea visible y no quede debajo del header.
+        tipo_documento_element = driver.find_element(*tipo_documento_locator)
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", tipo_documento_element)
+        time.sleep(0.5)
+
+        # Seleccionamos Tipo de identificación
+        tipo_documento_element.click()
+        print("Se selecciona el campo TIPO DE DOCUMENTO")
+
+        # Acá seleccionaremos el tipo de documento CEDULA CIUDADANIA
+        c_c = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[@role='option']//span[text()='CÉDULA CIUDADANIA']"))
+        )
+        c_c.click()
+        print("Se ha seleccionado CEDULA DE CIUDADANÍA")
+
+
+        # 2. Ahora vamos a agregar el # de documento
+        print("Buscando el campo '# identificación *'...")
+        numero_id_input = WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located((By.XPATH, "//span[text()='# identificación *']/following-sibling::label//input"))
+        )
+        numero_id_input.clear()
+        numero_id_input.send_keys("123456789") # <-- Escribe aquí el número que necesites
+        print("Número de identificación ingresado.")
+
+        
+
+        print("Proceso de cotización finalizado.")
+        time.sleep(5)
+
+
+
+
+
 
         print("Proceso de cotización finalizado.")
         time.sleep(5) # Pausa para ver los resultados
@@ -188,8 +247,8 @@ if driver:
     except Exception as e:
         print(f"Ocurrió un error en el proceso de cotización: {e}")
 
-    finally:
-        # Cierra el navegador al final
-        driver.quit()
-else:
-    print("No se pudo completar el login. Saliendo del script.")
+#     finally:
+#         # Cierra el navegador al final
+#         driver.quit()
+# else:
+#     print("No se pudo completar el login. Saliendo del script.")
