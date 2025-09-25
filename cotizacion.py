@@ -229,19 +229,138 @@ if driver:
         numero_id_input.send_keys("123456789") # <-- Escribe aquí el número que necesites
         print("Número de identificación ingresado.")
 
+
+        # 3. Ahora vamos a agregar la fecha de expedición del documento (VERSIÓN FINAL BIDIRECCIONAL)
         
+        # Abre el calendario
+        fecha_exp_doc = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[text()='Fecha expedición documento']/following-sibling::label"))
+        )
+        fecha_exp_doc.click()
+        print("Se abre el panel para asignar una fecha.")
+
+        # --- INICIO DE LA LÓGICA DE NAVEGACIÓN FINAL ---
+
+        # Definimos el objetivo y herramientas
+        fecha_objetivo = date(2014, 11, 14)
+        meses_a_numero = {
+            'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5, 'junio': 6,
+            'julio': 7, 'agosto': 8, 'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+        }
+
+        # Bucle principal para ajustar Año y Mes
+        print(f"Buscando la fecha: {fecha_objetivo.strftime('%B de %Y')}...")
+        
+        # Localizadores de lectura
+        year_locator = (By.XPATH, "(//div[contains(@class, 'q-date__navigation')]//button//span[@class='block'])[2]")
+        month_locator = (By.XPATH, "(//div[contains(@class, 'q-date__navigation')]//button//span[@class='block'])[1]")
+        
+        # --- AÑADIMOS BOTONES PARA NAVEGAR HACIA ADELANTE ---
+        prev_year_btn_locator = (By.XPATH, "//button[@aria-label='Año anterior']")
+        next_year_btn_locator = (By.XPATH, "//button[@aria-label='Año siguiente']")
+        prev_month_btn_locator = (By.XPATH, "//button[@aria-label='Mes anterior']")
+        next_month_btn_locator = (By.XPATH, "//button[@aria-label='Mes siguiente']")
+        
+        while True:
+            # Leemos el estado actual del calendario
+            year_element = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(year_locator))
+            month_element = WebDriverWait(driver, 10).until(EC.visibility_of_element_located(month_locator))
+            current_year = int(year_element.text)
+            current_month = meses_a_numero[month_element.text.lower()]
+            
+            # Condición de salida: si ya llegamos, rompemos el bucle
+            if current_year == fecha_objetivo.year and current_month == fecha_objetivo.month:
+                print(f"Mes y año correctos encontrados: {month_element.text} de {current_year}")
+                break
+
+            # Lógica de decisión bidireccional
+            element_to_wait_for = None # Para saber qué elemento debe refrescarse
+            btn_locator_to_click = None
+
+            if current_year > fecha_objetivo.year:
+                btn_locator_to_click = prev_year_btn_locator
+                element_to_wait_for = year_element
+            elif current_year < fecha_objetivo.year:
+                btn_locator_to_click = next_year_btn_locator
+                element_to_wait_for = year_element
+            # Si los años son iguales, ajustamos el mes
+            elif current_month > fecha_objetivo.month:
+                btn_locator_to_click = prev_month_btn_locator
+                element_to_wait_for = month_element
+            elif current_month < fecha_objetivo.month:
+                btn_locator_to_click = next_month_btn_locator
+                element_to_wait_for = month_element
+
+            # Ejecutamos el clic y la espera
+            if btn_locator_to_click and element_to_wait_for:
+                WebDriverWait(driver, 10).until(EC.element_to_be_clickable(btn_locator_to_click)).click()
+                WebDriverWait(driver, 10).until(EC.staleness_of(element_to_wait_for))
+            else:
+                # Si no hay ninguna acción que tomar, salimos para evitar un bucle infinito
+                print("Error de lógica, saliendo del bucle.")
+                break
+
+        # SELECCIONAR EL DÍA
+        print(f"Seleccionando el día {fecha_objetivo.day}...")
+        day_locator = (By.XPATH, f"//div[contains(@class, 'q-date__calendar-days')]//button[.//span[text()='{fecha_objetivo.day}']]")
+        day_element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable(day_locator))
+        driver.execute_script("arguments[0].click();", day_element)
+        
+        print(f"Fecha completa seleccionada: {fecha_objetivo.strftime('%d de %B de %Y')}")
+
+        # --- FIN DE LA LÓGICA DE NAVEGACIÓN FINAL ---
+
+        # 4. Ahora vamos a digitar Primer nombre *
+        print("Buscando el campo '# identificación *'...")
+        Primer_nombre = WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located((By.XPATH, "//span[text()='Primer nombre *']/following-sibling::label//input"))
+        )
+        Primer_nombre.clear()
+        Primer_nombre.send_keys("KEVIN")
+        print("Nombre registrado.")
+
+        # 5. Ahora vamos a digitar Segundo nombre
+        print("Vamos a digitar el segundo nombre")
+        Segundo_nombre = WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located ((By.XPATH, "//span[text()='Segundo nombre']/following-sibling::label//input"))
+        )
+        Segundo_nombre.clear()
+        Segundo_nombre.send_keys("REINALDO")
+        print("Segundo nombre registrado")
+
+        # 6. Ahora vamos a agregar el Primer apellido *
+        print("Vamos a digitar el Primer apellido *")
+        Primer_apellido = WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located ((By.XPATH, "//span[text()='Primer apellido *']/following-sibling::label//input"))
+        )
+        Primer_apellido.clear()
+        Primer_apellido.send_keys("Guerrero")
+        print("Apellido registrado")
+
+        # 7. Ahora vamos a agregar el Segundo apellido
+        print("Vamos  digitar el segundo apellido")
+        Segundo_apellido = WebDriverWait (driver, 15).until(
+            EC.visibility_of_element_located ((By.XPATH, "//span[text()='Segundo apellido']/following-sibling::label//input"))
+        )
+        Segundo_apellido.clear()
+        Segundo_apellido.send_keys("Garcia")
+        print("Segundo apellido registrado")
+
+        # 8. Ahora vamos a agregar la Fecha de nacimiento *
+        fecha_nacimiento = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[text()='Fecha expedición documento']/following-sibling::label"))
+        )
+        fecha_nacimiento.click()
+        print("Se abre el panel para asignar una fecha.")
+
+
+
+
+
+
 
         print("Proceso de cotización finalizado.")
-        time.sleep(5)
 
-
-
-
-
-
-        print("Proceso de cotización finalizado.")
-        time.sleep(5) # Pausa para ver los resultados
-    
     except TimeoutException:
         print("Se agotó el tiempo de espera. El elemento no se encontró o no era clickeable.")
     except Exception as e:
